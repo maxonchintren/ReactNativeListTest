@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { SafeAreaView, View, FlatList, ActivityIndicator, RefreshControl } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { eventsSelector, isAllLoadedSelector, isLoadingEventsSelector, pagingSelector } from '../../store/selectors/events'
@@ -12,7 +12,7 @@ const List = ({ navigation }) => {
   const dispatch = useDispatch()
 
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [secs, setSecs] = useState(20)
+  const [secs, setSecs] = useState(60)
   const [isTimerActive, setIsTimerActive] = useState(true)
 
   const events = useSelector(eventsSelector)
@@ -20,9 +20,12 @@ const List = ({ navigation }) => {
   const paging = useSelector(pagingSelector)
   const isAllLoaded = useSelector(isAllLoadedSelector)
 
+  const flatListRef = useRef()
+
   useEffect(() => {
     fetchEvents()
     const unsubscribeFocus = navigation.addListener('focus', () => {
+      flatListRef.current.scrollToOffset({ offset: 0 })
       fetchEvents(true, true)
       setIsTimerActive(true)
     })
@@ -49,7 +52,7 @@ const List = ({ navigation }) => {
     if (
         isLoadingEvents ||
         (isAllLoaded && !refresh) ||
-        ((refresh && !isAuto) && secs + 5 >= 20)
+        ((refresh && !isAuto) && secs + 15 >= 60)
     ) return
 
     if (refresh) {
@@ -61,7 +64,7 @@ const List = ({ navigation }) => {
       () => {
         if (refresh) {
           setIsRefreshing(false)
-          setSecs(20)
+          setSecs(60)
         }
       },
       (error) => {
@@ -107,12 +110,13 @@ const List = ({ navigation }) => {
       <FlatList
         data={events}
         keyExtractor={(item) => `event-${item.id}`}
+        ref={flatListRef}
         contentContainerStyle={styles.listContainer}
         renderItem={renderItem}
         ListHeaderComponent={listHeaderComponent}
         ListFooterComponent={listFooterComponent}
         showsVerticalScrollIndicator={false}
-        onEndReached={fetchEvents}
+        onEndReached={() => fetchEvents()}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={() => fetchEvents(true)} />
         }

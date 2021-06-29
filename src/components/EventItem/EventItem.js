@@ -2,7 +2,7 @@ import React from 'react'
 import { Image, Text, View, TouchableOpacity } from 'react-native'
 import styles from './styles'
 
-const EventItem = ({ type, actor, repo, goToEvent }) => {
+const EventItem = ({ type, actor, goToEvent }) => {
 
   return (
     <TouchableOpacity onPress={goToEvent} style={styles.eventItemCont}>

@@ -1,9 +1,4 @@
 import { REQUEST, SUCCESS, FAILURE } from '../constants/statuses'
-import {
-  startLoading,
-  finishLoading,
-  requestError
-} from '../modules/request/actions'
 
 export const action = (type, payload = {}) => {
   return { type, payload }
@@ -51,17 +46,14 @@ export const makeRequest = (
   const action = createStatusActions(reqStatuses)
 
   return async (dispatch) => {
-    dispatch(startLoading())
     dispatch(action.request())
     try {
       const resp = await apiReq(payload, paging)
       dispatch(action.success({ data: resp.data, paging }))
       callbackSuccess(resp.data)
-      dispatch(finishLoading())
     } catch (error) {
       dispatch(action.failure(error))
       callbackError(error)
-      dispatch(requestError(error))
     }
   }
 }
